@@ -1,0 +1,20 @@
+Unimatrix, a Herdr layout
+Copyright 2026 rbkuhn
+
+This product includes software adapted from:
+
+- Herdr (https://herdr.dev): the shipped spaces, tabs, workspace-chrome and
+  pane mods. Licensed under the Apache License, Version 2.0.
+- herdr-traveler (https://github.com/franky5440-afk/herdr-traveler): the
+  traveler-agents and traveler-tabs mods and the traveler layout, by way of
+  herdr-inferno and herdr-collective. Licensed under the Apache License,
+  Version 2.0.
+
+Changes: renamed to unimatrix-*. New layout tree (sector rail, triage board,
+vitals column). New rail, board and vitals mods. Restyled tabs and pane
+header. Replaced all art, theme and sounds. Added a Claude Code statusline
+recorder (scripts/).
+
+Bundled fonts (mods/unimatrix-rail/fonts) are licensed under the SIL Open
+Font License 1.1; see OFL-Silkscreen.txt, OFL-PixelifySans.txt and
+OFL-VT323.txt.
