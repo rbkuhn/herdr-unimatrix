@@ -74,6 +74,6 @@ Clicking a drone always plays `blip.mp3`.
 - Code: Apache-2.0 (see `LICENSE` and `NOTICE`). It is adapted from Herdr's shipped mods and from herdr-traveler, both Apache-2.0.
 - Art: the drone faces, locations, icons and backgrounds were generated with OpenAI image models for this project. They were reduced by script to fixed pixel palettes and animated frame by frame. They are released under Apache-2.0.
 - Sounds: generated with ElevenLabs on a paid plan, processed with ffmpeg, and released under Apache-2.0.
-- Fonts: [Silkscreen](https://fonts.google.com/specimen/Silkscreen), [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans) and [VT323](https://fonts.google.com/specimen/VT323), SIL Open Font License 1.1 (see `mods/unimatrix-rail/fonts/OFL-*.txt`).
+- Fonts: [Silkscreen](https://fonts.google.com/specimen/Silkscreen), [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans) and [VT323](https://fonts.google.com/specimen/VT323), plus [Departure Mono](https://departuremono.com) as the terminal font (the [Nerd Fonts](https://www.nerdfonts.com) build), SIL Open Font License 1.1 (see `mods/unimatrix-rail/fonts/OFL-*.txt`).
 
 Unimatrix is an original work. It is not affiliated with or endorsed by any film, TV or game studio.

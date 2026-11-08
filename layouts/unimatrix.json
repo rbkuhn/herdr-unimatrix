@@ -193,6 +193,7 @@
   ],
   "theme": "unimatrix",
   "terminal_opacity": 0.5,
+  "font": "DepartureMono Nerd Font Mono",
   "ui_font": "Pixelify Sans",
   "preview": "layouts/unimatrix.png"
 }

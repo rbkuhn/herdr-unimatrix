@@ -45,7 +45,7 @@ Left to right, top to bottom:
   - Below it, a stack of Herdr's `changes`, `files` and `inbox` panels, with Changes showing first.
 - **Status bar**: 26px, Herdr's `workspace-status` over `art/footer.png`.
 - **Theme** `unimatrix`: background `#010a09`, foreground `#c2ead8`, accent and working `#36e27a`, blocked `#ff3b30`, done `#4fe3e0`, idle `#2f5a50`, canvas `#000504`, chrome `#020c0b`, surface `#04120f`, raised `#0a2420`, border `#174d3c99`. ANSI: `#010a09 #ff3b30 #36e27a #d9c45a #3fa8d9 #a07ae0 #4fe3e0 #c2ead8 / #2f5a50 #ff6a5e #7dffad #ecdc78 #79c8ee #c0a0f0 #8ff2ee #ecfff6`.
-- **Fonts**: the UI font is Pixelify Sans. HUD labels use Silkscreen. VT323 is bundled too. All three are in `mods/unimatrix-rail/fonts/`.
+- **Fonts**: the terminal font is DepartureMono Nerd Font Mono (pixel monospace with Nerd Font icons). The UI font is Pixelify Sans. HUD labels use Silkscreen. VT323 is bundled too. All four are in `mods/unimatrix-rail/fonts/`, so they load with the layout.
 
 ## How it behaves
 
@@ -65,7 +65,7 @@ Left to right, top to bottom:
 
 ## Built from
 
-- **Layout tree**: root `row`: [`sidebar` block `unimatrix-rail` (112px, min = max = 112), `work` column [`tabs` `unimatrix-tabs` 42px, `board` `unimatrix-board` 196px (110–420), `work-body` row [`main` `{tab:"active"}` with a pane frame whose header is `unimatrix-pane`, `panel` column 330px [`vitals` `unimatrix-vitals` 292px, `panel-body` stack `files`/`changes`/`inbox`, active `changes`]], `status` `workspace-status` 26px]]. Root: `theme: "unimatrix"`, `ui_font: "Pixelify Sans"`, `terminal_opacity: 0.5`, `terminal_padding: [14,12]`, `titlebar: "none"`, `preview: "layouts/unimatrix.png"`.
+- **Layout tree**: root `row`: [`sidebar` block `unimatrix-rail` (112px, min = max = 112), `work` column [`tabs` `unimatrix-tabs` 42px, `board` `unimatrix-board` 196px (110–420), `work-body` row [`main` `{tab:"active"}` with a pane frame whose header is `unimatrix-pane`, `panel` column 330px [`vitals` `unimatrix-vitals` 292px, `panel-body` stack `files`/`changes`/`inbox`, active `changes`]], `status` `workspace-status` 26px]]. Root: `theme: "unimatrix"`, `font: "DepartureMono Nerd Font Mono"`, `ui_font: "Pixelify Sans"`, `terminal_opacity: 0.5`, `terminal_padding: [14,12]`, `titlebar: "none"`, `preview: "layouts/unimatrix.png"`.
 - **unimatrix-board**:
   - Groups `agents()` by status and calls `setAgentOrder`.
   - An 80 ms `cx.timer.every` clock calls `cx.notify()` while `window().active`, and every third tick otherwise. It skips this when there are no agents.
