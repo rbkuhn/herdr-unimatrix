@@ -1,6 +1,6 @@
 # Unimatrix
 
-An agents-first triage deck for Herdr, in teal-black pixel art. Across the top of the window, a TRIAGE MATRIX sorts every agent into four lanes: AWAITING INPUT (red), PROCESSING (green), COMPLETE (cyan) and REGENERATING (dim). Each agent is a drone card with an animated 60px pixel-art face. A 76px sector rail on the left shows each space as a pixel location icon with a status lamp. A right column holds HIVE VITALS above the Changes/Files/Inbox panels. Terminals sit over a teal circuit hull at 50% opacity.
+An agents-first triage deck for Herdr, in teal-black pixel art. Across the top of the window, a TRIAGE MATRIX sorts every agent into four lanes: AWAITING INPUT (red), PROCESSING (green), COMPLETE (cyan) and REGENERATING (dim). Each agent is a drone card with an animated 60px pixel-art face. A 112px sector rail on the left shows each space as a pixel location icon with a status lamp, grouped per computer in its own colour. A right column holds HIVE VITALS above the Changes/Files/Inbox panels. Terminals sit over a teal circuit hull at 50% opacity.
 
 ![Unimatrix](preview.png)
 
@@ -8,15 +8,16 @@ An agents-first triage deck for Herdr, in teal-black pixel art. Across the top o
 
 Left to right, top to bottom:
 
-- **Sector rail**: 76px, fixed. Background: `mods/unimatrix-rail/art/rail.png` (cover), with a 1px `#0d2a22` border.
+- **Sector rail**: 112px, fixed. Background: `mods/unimatrix-rail/art/rail.png` (cover), with a 1px `#0d2a22` border.
   - At the top, a 34px rotating pixel cube and "HERDR", then "SECTORS 0N".
   - **Sector icons**: one per space, a 50px location icon (cube, sphere, alcove, planet, nexus or vortex), dimmed to 72% unless active.
-    - Under it: "S-00N" in Silkscreen 6px and the name, truncated to 62px, at 9.5px.
+    - Under it: "S-00N" in Silkscreen 6px and the name, truncated to 88px, at 10px. Each sector is 92px wide.
     - An 8px status lamp sits on the top-right corner, coloured by the most urgent agent in the space: blocked `#ff3b30` (pulsing), working `#36e27a`, done `#4fe3e0`. Idle spaces have no lamp.
     - An amber `#e8b13a` "±N" badge on the bottom-left shows the number of uncommitted files.
-    - The active sector is `#06201aee` with a 1px `#36e27a` border.
+    - The active sector is its computer's colour at 15% (`26` alpha) with a 1px border in that colour; its name turns white.
     - The tooltip gives the name, branch, ahead/behind and changes.
-    - Spaces are grouped by machine under a tiny machine label.
+    - **Computers**: spaces are grouped per computer, this one first, then the others in the order their spaces come. Each group is a 104px block with a 3px left stripe and a 5% wash in the computer's colour: this computer `#36e27a`, the others in turn `#4fc3ff`, `#ffb347`, `#c38bff`, `#ff6ad5`, `#f4e04d`. Groups are 8px apart.
+    - Each group starts with a header on an 18% wash of its colour: the name at 9px bold ("THIS PC", or the remote machine's ssh host name from `hc machine ls`, else its Herdr name), then a 5px square and "N SPACES" in Silkscreen 6px. An unreachable machine shows a red square and red "OFFLINE", with a dimmed name and stripe. The header tooltip gives the host and its Herdr name.
   - **Rail foot**: + (new space), then search, settings and add machine, each with a tooltip.
 - **Tab strip**: 42px over `art/strip.png`, draggable.
   - Tabs are 32px tall, with a 26px drone face and the name at 12px. The face has a red border when its agent is blocked.
@@ -64,14 +65,14 @@ Left to right, top to bottom:
 
 ## Built from
 
-- **Layout tree**: root `row`: [`sidebar` block `unimatrix-rail` (76px, min = max = 76), `work` column [`tabs` `unimatrix-tabs` 42px, `board` `unimatrix-board` 196px (110–420), `work-body` row [`main` `{tab:"active"}` with a pane frame whose header is `unimatrix-pane`, `panel` column 330px [`vitals` `unimatrix-vitals` 292px, `panel-body` stack `files`/`changes`/`inbox`, active `changes`]], `status` `workspace-status` 26px]]. Root: `theme: "unimatrix"`, `ui_font: "Pixelify Sans"`, `terminal_opacity: 0.5`, `terminal_padding: [14,12]`, `titlebar: "none"`, `preview: "layouts/unimatrix.png"`.
+- **Layout tree**: root `row`: [`sidebar` block `unimatrix-rail` (112px, min = max = 112), `work` column [`tabs` `unimatrix-tabs` 42px, `board` `unimatrix-board` 196px (110–420), `work-body` row [`main` `{tab:"active"}` with a pane frame whose header is `unimatrix-pane`, `panel` column 330px [`vitals` `unimatrix-vitals` 292px, `panel-body` stack `files`/`changes`/`inbox`, active `changes`]], `status` `workspace-status` 26px]]. Root: `theme: "unimatrix"`, `ui_font: "Pixelify Sans"`, `terminal_opacity: 0.5`, `terminal_padding: [14,12]`, `titlebar: "none"`, `preview: "layouts/unimatrix.png"`.
 - **unimatrix-board**:
   - Groups `agents()` by status and calls `setAgentOrder`.
   - An 80 ms `cx.timer.every` clock calls `cx.notify()` while `window().active`, and every third tick otherwise. It skips this when there are no agents.
   - Each face is a strip image at `left(-frame * 60)` inside an `overflow_hidden` box.
   - CX and LK come from `data/traveler/sessions/<terminal>.json` (`{updatedAt, contextRemainingPct, fiveHourRemainingPct, sessionName, model, effort}`), read with `readTextFile` and `watchFolder`.
   - `lib.js` holds the roles, `designation()` and the animation table. The tabs and vitals mods have their own copies.
-- **unimatrix-rail**: uses `spaces()`, `agents()`, `panes()` and `exec("git", ["status", "--porcelain=v2", "--branch"], {cwd, on})` per space, at most every 20 s while the window is active. Its cube is a 36-frame strip on a 90 ms timer. Right-click runs `openOverlay` for `menu`. It also holds every asset: art, fonts and sounds.
+- **unimatrix-rail**: uses `spaces()`, `agents()`, `panes()` and `exec("git", ["status", "--porcelain=v2", "--branch"], {cwd, on})` per space, at most every 20 s while the window is active. It reads `hc(["machine", "ls", "--json"])` on start and every 30 s for host names and reachability, and `machines()` for `layout: "unavailable"`. Its cube is a 36-frame strip on a 90 ms timer. Right-click runs `openOverlay` for `menu`. It also holds every asset: art, fonts and sounds.
 - **unimatrix-vitals**: a 1 s clock for the time and uptime, and a 10 s timer for the load sample and `git status` of the shown space.
 - **unimatrix-tabs**: a restyled clone of collective-tabs (from Herdr's `tabs`). **unimatrix-pane**: a restyled clone of Herdr's `pane`.
 - **scripts/unimatrix-statusline.sh** and **unimatrix-record.mjs**: a Claude Code statusLine that writes the session cache file atomically and prints nothing.

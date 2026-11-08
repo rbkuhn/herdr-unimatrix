@@ -1,4 +1,4 @@
-// Unimatrix sector rail: a 76px column. The rotating brand cube on top, then every space as its
+// Unimatrix sector rail: a 112px column, its spaces grouped per computer, each in its own colour. The rotating brand cube on top, then every space as its
 // pixel-art location with a status lamp (its most urgent agent) and an amber dot when its repo
 // has uncommitted files, then + (new space), settings and add machine. Click selects a sector,
 // right-click opens its menu; the tooltip says its name, branch and changes.
@@ -6,7 +6,7 @@
 // the window is in front.
 import { View, div, image, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { appHome, exec, openOverlay, panes, readTextFile, run, spaces, theme, updates, window } from "herdr";
+import { appHome, exec, hc, machines, openOverlay, panes, readTextFile, run, spaces, theme, updates, window } from "herdr";
 
 const PLACES = ["cube", "sphere", "alcove", "planet", "nexus", "vortex"];
 const PLACES_FILE = `${appHome()}/mods/unimatrix-rail/places.json`;
@@ -18,6 +18,8 @@ const AMBER = "#e8b13a";
 const CUBE = 34, CUBE_FRAMES = 36, CUBE_MS = 90;
 const ICON = 50;
 const LAMP = { blocked: RED, working: GREEN, done: "#4fe3e0" };
+// Each computer gets its own colour: this one green, the others in order of their spaces.
+const REMOTE_COLORS = ["#4fc3ff", "#ffb347", "#c38bff", "#ff6ad5", "#f4e04d"];
 
 const placeFor = (name, places) =>
   `${ART}/${PLACES.includes(places[name]) ? places[name] : PLACES[[...name].reduce((n, c) => n + c.codePointAt(0), 0) % PLACES.length]}.png`;
@@ -46,6 +48,20 @@ export default class Rail extends View {
       if (ids !== this.ids || (window()?.active && Date.now() - this.last > 20000)) this.refresh(cx);
     });
     this.refresh(cx);
+    // Host names for remote machines (their Herdr names are often bare IPs).
+    this.hosts = {};
+    const loadHosts = (cx) => cx.spawn(async (cx) => {
+      try {
+        const r = await hc(["machine", "ls", "--json"]);
+        if (r.code === 0) {
+          const next = {};
+          for (const m of JSON.parse(r.stdout).machines ?? []) if (m.name) next[m.name] = { host: m.host || null, state: m.state || null };
+          this.hosts = next; cx.notify();
+        }
+      } catch {}
+    });
+    loadHosts(cx);
+    cx.timer.every(30000, loadHosts);
   }
 
   refresh(cx) {
@@ -83,14 +99,14 @@ export default class Rail extends View {
       .child(image(`${ART}/cube.webp`).absolute().top(0).left(-i * CUBE).w(CUBE * CUBE_FRAMES).h(CUBE));
   }
 
-  sector(s, i, t) {
+  sector(s, i, t, color) {
     const on = s.active;
     const g = this.git[s.id];
     const lamp = LAMP[s.status];
     const tip = [s.name, g?.branch ? `branch ${g.branch}${g.ahead ? `, ${g.ahead} ahead` : ""}${g.behind ? `, ${g.behind} behind` : ""}` : null, g?.dirty ? `${g.dirty} uncommitted` : null, s.machine ? `on ${s.machine}` : null].filter(Boolean).join(" · ");
-    const name = s.name.length > 9 ? `${s.name.slice(0, 8)}…` : s.name;
-    return v_flex().id(`sector-${s.id}`).w(64).flex_none().items_center().gap(2).py(4)
-      .bg(on ? "#06201aee" : "#00000000").border(1).border_color(on ? GREEN : "#00000000")
+    const name = s.name;
+    return v_flex().id(`sector-${s.id}`).w(92).flex_none().items_center().gap(2).py(4)
+      .bg(on ? `${color}26` : "#00000000").border(1).border_color(on ? color : "#00000000")
       .hover((st) => st.bg("#0a2a21cc")).cursor_pointer().tooltip(tip)
       .on_click(() => run("space.select", { id: s.id }))
       .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: s.id } } }); })
@@ -99,8 +115,8 @@ export default class Rail extends View {
         .when(Boolean(lamp), (el) => el.child(div().absolute().top(0).right(0).size(8).bg(lamp).border(1).border_color("#000000")
           .when(s.status === "blocked", (l) => l.loop("opacity", { from: 0.2, to: 1, period: 700 }))))
         .when(Boolean(g?.dirty), (el) => el.child(div().absolute().bottom(1).left(0).h(9).px(2).bg("#000000c0").font_family(HUD).text_size(6).text_color(AMBER).child(`±${g.dirty > 99 ? "99" : g.dirty}`))))
-      .child(div().font_family(HUD).text_size(6).text_color(on ? GREEN : t.dim).child(`S-${String(i + 1).padStart(3, "0")}`))
-      .child(div().max_w(62).truncate().text_size(9.5).font_weight(on ? 700 : 500).text_color(on ? "#c2ffd9" : t.muted).child(name));
+      .child(div().font_family(HUD).text_size(6).text_color(on ? color : t.dim).child(`S-${String(i + 1).padStart(3, "0")}`))
+      .child(div().max_w(88).truncate().text_size(10).font_weight(on ? 700 : 500).text_color(on ? "#ffffff" : t.muted).child(name));
   }
 
   render() {
@@ -108,13 +124,34 @@ export default class Rail extends View {
     const list = spaces();
     const icon = (id, file, tip, action) => div().id(id).size(28).flex_none().flex().items_center().justify_center().text_color(t.dim)
       .hover((s) => s.bg("#0a2a21").text_color(GREEN)).tooltip(tip).cursor_pointer().on_click(action).child(svg(`mods/unimatrix-rail/${file}.svg`).size(14));
-    const items = [];
-    let machine;
+    // One framed block per computer: a coloured header naming it, then its spaces on a stripe of
+    // the same colour. This computer first, then the others in the order their spaces come.
+    const groups = [];
     list.forEach((s, i) => {
-      // A thin marker where the spaces of another machine begin.
-      if (i > 0 && (s.machine ?? null) !== machine) items.push(h_flex().w(56).h(10).flex_none().gap(3).items_center().child(div().flex_1().h(1).bg("#174d3c")).child(div().font_family(HUD).text_size(5.5).text_color(t.dim).child((s.machine ?? "LOCAL").slice(0, 6).toUpperCase())).child(div().flex_1().h(1).bg("#174d3c")));
-      machine = s.machine ?? null;
-      items.push(this.sector(s, i, t));
+      const key = s.machine ?? null;
+      let g = groups.find((x) => x.key === key);
+      if (!g) groups.push(g = { key, spaces: [] });
+      g.spaces.push({ s, i });
+    });
+    groups.sort((a, b) => (a.key === null ? -1 : b.key === null ? 1 : 0));
+    const known = machines();
+    let r = 0;
+    const items = groups.map((g) => {
+      const color = g.key === null ? GREEN : REMOTE_COLORS[r++ % REMOTE_COLORS.length];
+      const info = g.key === null ? null : this.hosts?.[g.key];
+      const offline = g.key !== null && (info?.state === "unreachable" || known.find((m) => m.name === g.key)?.layout === "unavailable");
+      const label = g.key === null ? "THIS PC" : (info?.host || g.key);
+      const tip = g.key === null ? "This computer" : `${info?.host ? `${info.host} (${g.key})` : g.key}${offline ? " · can't be reached" : ""}`;
+      return v_flex().w(104).flex_none().items_center().gap(3).pb(4)
+        .bg(`${color}0d`).border_l(3).border_color(offline ? `${color}55` : color)
+        .child(v_flex().id(`machine-${g.key ?? "local"}`).w_full().flex_none().px(4).py(3).gap(1)
+          .bg(`${color}${offline ? "18" : "2e"}`).tooltip(tip)
+          .child(div().w_full().truncate().text_size(9).font_weight(700).text_color(offline ? t.muted : color).child(label))
+          .child(h_flex().gap(4).items_center()
+            .child(div().size(5).flex_none().bg(offline ? RED : color))
+            .child(div().font_family(HUD).text_size(6).text_color(offline ? RED : t.dim)
+              .child(offline ? "OFFLINE" : `${g.spaces.length} SPACE${g.spaces.length === 1 ? "" : "S"}`))))
+        .children(g.spaces.map(({ s, i }) => this.sector(s, i, t, color)));
     });
     return v_flex().id("unimatrix-rail").size_full().items_center().text_color(t.foreground)
       .child(v_flex().w_full().h(58).flex_none().items_center().justify_center().gap(1).bg("#010807d8").border_b(1).border_color("#174d3c")
@@ -123,7 +160,7 @@ export default class Rail extends View {
       .child(h_flex().w_full().h(20).flex_none().justify_center().items_center().gap(3)
         .child(div().font_family(HUD).text_size(6.5).text_color(GREEN).child("SECTORS"))
         .child(div().font_family(HUD).text_size(6.5).text_color(t.dim).child(String(list.length).padStart(2, "0"))))
-      .child(v_flex().id("sectors").w_full().flex_1().min_h(0).items_center().gap(4).py(2).overflow_y_scrollbar().children(items)
+      .child(v_flex().id("sectors").w_full().flex_1().min_h(0).items_center().gap(4).py(2).overflow_y_scrollbar().gap(8).children(items)
         .child(div().id("space-new").w(50).h(26).flex_none().flex().items_center().justify_center().border(1).border_color("#174d3c").border_dashed().text_color(t.dim)
           .hover((s) => s.text_color(GREEN).border_color(GREEN)).tooltip("New space").cursor_pointer().on_click(() => run("space.new")).child(svg("mods/unimatrix-rail/plus.svg").size(13))))
       .child(v_flex().w_full().flex_none().items_center().gap(2).py(6).bg("#010807d8").border_t(1).border_color("#174d3c")

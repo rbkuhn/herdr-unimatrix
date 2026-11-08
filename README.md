@@ -1,6 +1,6 @@
 # Unimatrix
 
-An agents-first triage deck for the [Herdr](https://herdr.dev) desktop app, in teal-black pixel art. Every agent is a drone with an animated pixel-art face, sorted into four lanes across the top of the window: AWAITING INPUT, PROCESSING, COMPLETE and REGENERATING. The drone that needs you is always the first thing you see. A thin sector rail on the left holds your spaces, and a HIVE VITALS panel on the right shows drone counts, the lowest context left, your 5-hour quota, an activity trace and the current branch.
+An agents-first triage deck for the [Herdr](https://herdr.dev) desktop app, in teal-black pixel art. Every agent is a drone with an animated pixel-art face, sorted into four lanes across the top of the window: AWAITING INPUT, PROCESSING, COMPLETE and REGENERATING. The drone that needs you is always the first thing you see. A sector rail on the left holds your spaces, grouped per computer in its own colour, and a HIVE VITALS panel on the right shows drone counts, the lowest context left, your 5-hour quota, an activity trace and the current branch.
 
 ![Unimatrix](preview.png)
 
@@ -22,7 +22,7 @@ Press `ctrl-shift-l` to switch back. To remove Unimatrix, delete the files you c
 
 Before installing, note that two mods run `git` locally:
 
-- `unimatrix-rail` runs `git status` in each space's folder, at most every 20 s, while the window is in front.
+- `unimatrix-rail` runs `git status` in each space's folder, at most every 20 s, while the window is in front. Every 30 s it also asks herdr-core (`hc machine ls`) for your machines' host names and whether they can be reached.
 - `unimatrix-vitals` runs it in the shown space's folder every 10 s.
 
 No mod reaches the network.
