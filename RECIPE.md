@@ -18,7 +18,7 @@ Left to right, top to bottom:
     - The tooltip gives the name, branch, ahead/behind and changes.
     - **Computers**: spaces are grouped per computer, this one first, then the others in the order their spaces come. Each group is a 104px block with a 3px left stripe and a 5% wash in the computer's colour: this computer `#36e27a`, the others in turn `#4fc3ff`, `#ffb347`, `#c38bff`, `#ff6ad5`, `#f4e04d`. Groups are 8px apart.
     - Each group starts with a header on an 18% wash of its colour: the name at 9px bold ("THIS PC", or the remote machine's ssh host name from `hc machine ls`, else its Herdr name), then a 5px square and "N SPACES" in Silkscreen 6px. An unreachable machine shows a red square and red "OFFLINE", with a dimmed name and stripe. The header tooltip gives the host and its Herdr name.
-  - **Rail foot**: + (new space), then search, settings and add machine, each with a tooltip.
+  - **Rail foot**: + (new space) at the end of the list, then a single row of three 28px buttons side by side (search, settings, add machine), each with a tooltip.
 - **Tab strip**: 42px over `art/strip.png`, draggable.
   - Tabs are 32px tall, with a 26px drone face and the name at 12px. The face has a red border when its agent is blocked.
   - The active tab is `#062019f2` with a 1px `#36e27a` border, `#c2ffd9` text and a 2px green underline. Other tabs are `#020c0ad8` with a `#0d2a22` border.

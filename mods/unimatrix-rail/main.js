@@ -163,7 +163,7 @@ export default class Rail extends View {
       .child(v_flex().id("sectors").w_full().flex_1().min_h(0).items_center().gap(4).py(2).overflow_y_scrollbar().gap(8).children(items)
         .child(div().id("space-new").w(50).h(26).flex_none().flex().items_center().justify_center().border(1).border_color("#174d3c").border_dashed().text_color(t.dim)
           .hover((s) => s.text_color(GREEN).border_color(GREEN)).tooltip("New space").cursor_pointer().on_click(() => run("space.new")).child(svg("mods/unimatrix-rail/plus.svg").size(13))))
-      .child(v_flex().w_full().flex_none().items_center().gap(2).py(6).bg("#010807d8").border_t(1).border_color("#174d3c")
+      .child(h_flex().w_full().flex_none().items_center().justify_center().gap(4).py(5).bg("#010807d8").border_t(1).border_color("#174d3c")
         .child(icon("search", "search", "Find anything", () => run("mod.open", { name: "picker" })))
         .child(div().relative().child(icon("settings", "settings", "Settings", () => run("app.settings")))
           .when(Boolean(updates().app.ready), (el) => el.child(div().absolute().top(3).right(3).size(5).bg(GREEN))))
